@@ -1,0 +1,41 @@
+📋 완성된 프롬프트 템플릿 모음 (Copy & Paste 즉시 사용)
+기본 템플릿:
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+HAPPY (행복한 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing HAPPY expression (smiling, content face, satisfied look). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+SURPRISED (놀란 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing SURPRISED expression (shocked face, hands on cheeks, wide eyes and open mouth). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+SAD (슬픈 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing SAD expression (disappointed look, slumped shoulders, drooping face). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+ANGRY (화난 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing ANGRY expression (furrowed brows, clenched fists, frustrated face). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+EXHAUSTED (지친 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing EXHAUSTED expression (tired eyes, hand on forehead, weary posture). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+LAUGHING (웃는 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing LAUGHING expression (big smile, hand on belly, joyful face). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+CONFIDENT (자신감 있는 표정):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) showing CONFIDENT expression (arms spread wide, chest out, triumphant pose). [여기에 장면 설명 삽입]. The character has simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+인포그래픽/다이어그램 장면:
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) standing next to an educational diagram showing [다이어그램 내용]. Character has [감정 표현]. The character has simple body with clear proportions. Full color illustration with shading. Educational infographic style. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+비교/대비 장면 (Before & After):
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Split comparison scene. LEFT SIDE: Round-headed character with [왼쪽 감정 표현] doing [왼쪽 행동]. RIGHT SIDE: Same character with [오른쪽 감정 표현] doing [오른쪽 행동]. Dramatic before-and-after contrast. Characters have clear facial features (dot eyes, expressive eyebrows and mouth) and simple body with clear proportions. Full color illustration with shading. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+환경/배경 중심 장면:
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. [배경/환경 설명]. Round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) [캐릭터 행동] showing [감정 표현]. The character has simple body with clear proportions. Full color illustration with shading. Detailed background with atmosphere. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+수중/물속 장면:
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Underwater scene showing round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) [수중 행동]. [감정 표현]. The character has simple body with clear proportions. Full color illustration with shading. Blue water, surface light rays. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+지하/단면도 장면:
+Horizontal 16:9 ratio. Colorful cartoon illustration style like Korean webtoon. Cross-section diagram showing [지하 구조 설명]. On the surface, round-headed character with clear facial features (dot eyes, expressive eyebrows and mouth) [지상 행동] showing [감정 표현]. The character has simple body with clear proportions. Full color illustration with shading. Educational cross-section style. Comic book style, complete illustration not minimal line art. (No text, no letters, no speech bubbles)
+
+💡 사용법: 필요한 섹션 전체를 복사 → [대괄호] 부분만 실제 내용으로 교체 → 즉시 생성!
