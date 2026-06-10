@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>VPH Parser - YouTube 비디오 리스트 변환기</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f5f7fa;
+    color: #2c3e50;
+  }
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+  }
+  .subtitle {
+    color: #7f8c8d;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: #3498db; color: white; }
+  .btn-primary:hover { background: #2980b9; }
+  .btn-success { background: #27ae60; color: white; }
+  .btn-success:hover { background: #229954; }
+  .btn-secondary { background: #95a5a6; color: white; }
+  .btn-secondary:hover { background: #7f8c8d; }
+  .btn-warn { background: #e67e22; color: white; }
+  .btn-warn:hover { background: #d35400; }
+  .stats {
+    margin-left: auto;
+    font-size: 13px;
+    color: #555;
+  }
+  .panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .panels { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .panel h2 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+  }
+  textarea {
+    width: 100%;
+    height: 600px;
+    font-family: "Consolas", "Monaco", monospace;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    resize: vertical;
+  }
+  .result-area {
+    height: 600px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    background: #34495e;
+    color: white;
+    padding: 8px 6px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: 600;
+  }
+  td {
+    padding: 6px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  tr:hover td { background: #f8f9fa; }
+  td.num { text-align: right; font-family: "Consolas", monospace; }
+  td.title { max-width: 400px; word-break: break-word; }
+  td.badge {
+    text-align: center;
+    font-family: "Consolas", monospace;
+  }
+  .badge-na { color: #bbb; }
+  .badge-mul { color: #e74c3c; font-weight: 600; }
+  .empty {
+    padding: 40px;
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+  }
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #2c3e50;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📊 VPH Parser</h1>
+  <div class="subtitle">YouTube 비디오 리스트 텍스트를 CSV로 변환합니다. (기준일: 2026-06-10)</div>
+
+  <div class="toolbar">
+    <button class="btn-primary" onclick="parseInput()">🔄 변환</button>
+    <button class="btn-success" onclick="downloadCSV()">💾 CSV 다운로드</button>
+    <button class="btn-success" onclick="copyCSV()">📋 CSV 클립보드 복사</button>
+    <button class="btn-warn" onclick="loadSample()">📝 샘플 입력</button>
+    <button class="btn-secondary" onclick="clearAll()">🗑️ 초기화</button>
+    <div class="stats" id="stats">대기 중</div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <h2>입력 (원본 텍스트)</h2>
+      <textarea id="input" placeholder="YouTube 비디오 리스트 텍스트를 여기 붙여넣으세요..."></textarea>
+    </div>
+    <div class="panel">
+      <h2>결과 미리보기</h2>
+      <div class="result-area" id="resultArea">
+        <div class="empty">변환 버튼을 누르면 결과가 표시됩니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// 설정
+// ============================================================
+const BASE_DATE = new Date(2026, 5, 10); // 월은 0-indexed (5 = 6월)
+
+// 정규식 패턴
+const VPH_RE = /^\s*([\d.]+\s*[천만억]?|[\d.]+)\s*VPH\s*$/;
+const VIEWS_RE = /^\s*([\d.]+\s*[천만억]?)\s*views?\s*•\s*(.+?)\s*$/;
+const MULTIPLIER_RE = /^\s*(>?\s*[\d.]+\s*x)\s*$/i;
+const DURATION_RE = /^\s*\d{1,2}:\d{2}(:\d{2})?\s*$/;
+
+const HEADER_HINTS = new Set([
+  'video type:', 'videos', 'views:', 'subscribers:',
+  'publish date:', 'this month', 'clear all'
+]);
+
+// 최근 파싱 결과 보관 (다운로드/복사용)
+let currentRecords = [];
+
+// ============================================================
+// 유틸: 상대 시간 → YYYY-MM-DD
+// ============================================================
+function parseRelativeTime(text) {
+  const t = text.trim().toLowerCase();
+  const m = t.match(/(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago/);
+  if (!m) return text;
+
+  const value = parseInt(m[1], 10);
+  const unit = m[2];
+
+  // hour/minute/second는 '오늘'로 간주
+  if (unit === 'second' || unit === 'minute' || unit === 'hour') {
+    return formatDate(BASE_DATE);
+  }
+
+  const target = new Date(BASE_DATE);
+  if (unit === 'day')        target.setDate(target.getDate() - value);
+  else if (unit === 'week')  target.setDate(target.getDate() - value * 7);
+  else if (unit === 'month') target.setDate(target.getDate() - value * 30);
+  else if (unit === 'year')  target.setDate(target.getDate() - value * 365);
+  else return text;
+
+  return formatDate(target);
+}
+
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// ============================================================
+// 유틸: 한국 단위(천/만/억) 숫자를 정수(콤마 포함 문자열)로
+// ============================================================
+function toIntNumber(text) {
+  if (text == null) return '';
+  let s = String(text).trim().replace(/,/g, '').replace(/\+/g, '').replace(/\s/g, '');
+  if (!s) return '';
+
+  const units = [['억', 100000000], ['만', 10000], ['천', 1000]];
+  let multiplier = 1;
+  let numPart = s;
+  for (const [u, mult] of units) {
+    if (s.endsWith(u)) {
+      multiplier = mult;
+      numPart = s.slice(0, -u.length);
+      break;
+    }
+  }
+
+  const num = parseFloat(numPart);
+  if (isNaN(num)) return text;
+  const value = Math.round(num * multiplier);
+  return value.toLocaleString('en-US');
+}
+
+// ============================================================
+// 라인 판별
+// ============================================================
+const isVphLine = ln => VPH_RE.test(ln);
+const isViewsLine = ln => VIEWS_RE.test(ln);
+const isMultiplierLine = ln => MULTIPLIER_RE.test(ln);
+const isDurationLine = ln => DURATION_RE.test(ln);
+
+function extractVph(line) {
+  const m = line.match(VPH_RE);
+  return m ? m[1].trim() : '';
+}
+function extractViewsAndTime(line) {
+  const m = line.match(VIEWS_RE);
+  if (!m) return [null, null];
+  return [m[1].trim(), m[2].trim()];
+}
+function extractMultiplier(line) {
+  const m = line.match(MULTIPLIER_RE);
+  return m ? m[1].replace(/\s/g, '') : '';
+}
+
+// ============================================================
+// 제목 찾기 (views 라인 위쪽 역추적)
+// ============================================================
+function findTitle(lines, viewsIdx, blockStart) {
+  // 1차: 재생시간 라인 찾고 그 위 비공백 라인
+  for (let j = viewsIdx - 1; j >= blockStart; j--) {
+    if (isDurationLine(lines[j])) {
+      for (let k = j - 1; k >= blockStart; k--) {
+        if (lines[k]) return lines[k];
+      }
+      break;
+    }
+  }
+  // 2차: views에서 7칸 위
+  const candidate = viewsIdx - 7;
+  if (candidate >= blockStart && lines[candidate]) {
+    return lines[candidate];
+  }
+  // 3차: 블록 내 첫 비공백 라인 (헤더 제외)
+  for (let j = blockStart; j < viewsIdx; j++) {
+    const ln = lines[j];
+    if (ln && !HEADER_HINTS.has(ln.toLowerCase()) && !isDurationLine(ln)) {
+      return ln;
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// 메인 파서
+// ============================================================
+function parseText(text) {
+  const lines = text.split(/\r?\n/).map(ln => ln.trim());
+  const n = lines.length;
+
+  // VPH 라인 인덱스 수집
+  const vphIndices = [];
+  for (let i = 0; i < n; i++) {
+    if (isVphLine(lines[i])) vphIndices.push(i);
+  }
+
+  const records = [];
+  for (let idx = 0; idx < vphIndices.length; idx++) {
+    const vphIdx = vphIndices[idx];
+
+    // 블록 시작점
+    let blockStart;
+    if (idx === 0) {
+      blockStart = 0;
+    } else {
+      blockStart = vphIndices[idx - 1] + 1;
+      if (blockStart < n && isMultiplierLine(lines[blockStart])) {
+        blockStart += 1;
+      }
+    }
+
+    // views 라인 찾기 (블록 내 가장 마지막)
+    let viewsIdx = null;
+    for (let j = vphIdx - 1; j >= blockStart; j--) {
+      if (isViewsLine(lines[j])) {
+        viewsIdx = j;
+        break;
+      }
+    }
+    if (viewsIdx === null) continue;
+
+    const title = findTitle(lines, viewsIdx, blockStart);
+    if (!title) continue;
+
+    const vphValue = toIntNumber(extractVph(lines[vphIdx]));
+    const [rawViews, timeText] = extractViewsAndTime(lines[viewsIdx]);
+    const viewsValue = toIntNumber(rawViews);
+    const createdDate = parseRelativeTime(timeText);
+
+    let multiplier = 'NA';
+    if (vphIdx + 1 < n && isMultiplierLine(lines[vphIdx + 1])) {
+      multiplier = extractMultiplier(lines[vphIdx + 1]);
+    }
+
+    records.push({
+      제목: title,
+      VPH: vphValue,
+      생성시간: createdDate,
+      view: viewsValue,
+      배수: multiplier,
+    });
+  }
+
+  return records;
+}
+
+// ============================================================
+// UI: 파싱 실행
+// ============================================================
+function parseInput() {
+  const text = document.getElementById('input').value;
+  if (!text.trim()) {
+    showToast('입력이 비어 있습니다.');
+    return;
+  }
+  currentRecords = parseText(text);
+  renderTable(currentRecords);
+  document.getElementById('stats').textContent =
+    `✓ ${currentRecords.length}개 레코드 변환 완료`;
+}
+
+// ============================================================
+// UI: 테이블 렌더링
+// ============================================================
+function renderTable(records) {
+  const area = document.getElementById('resultArea');
+  if (!records.length) {
+    area.innerHTML = '<div class="empty">변환된 레코드가 없습니다.</div>';
+    return;
+  }
+
+  let html = '<table><thead><tr>';
+  html += '<th>#</th><th>제목</th><th>VPH</th><th>생성시간</th><th>view</th><th>배수</th>';
+  html += '</tr></thead><tbody>';
+
+  records.forEach((r, i) => {
+    const mulClass = r.배수 === 'NA' ? 'badge-na' : 'badge-mul';
+    html += '<tr>';
+    html += `<td>${i + 1}</td>`;
+    html += `<td class="title">${escapeHtml(r.제목)}</td>`;
+    html += `<td class="num">${escapeHtml(r.VPH)}</td>`;
+    html += `<td>${escapeHtml(r.생성시간)}</td>`;
+    html += `<td class="num">${escapeHtml(r.view)}</td>`;
+    html += `<td class="badge ${mulClass}">${escapeHtml(r.배수)}</td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  area.innerHTML = html;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ============================================================
+// CSV 생성
+// ============================================================
+function buildCSV(records) {
+  const headers = ['제목', 'VPH', '생성시간', 'view', '배수'];
+  const lines = [headers.map(csvEscape).join(',')];
+  for (const r of records) {
+    lines.push(headers.map(h => csvEscape(r[h])).join(','));
+  }
+  return lines.join('\r\n');
+}
+
+function csvEscape(val) {
+  const s = val == null ? '' : String(val);
+  if (/[",\r\n]/.test(s)) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+// ============================================================
+// CSV 다운로드
+// ============================================================
+function downloadCSV() {
+  if (!currentRecords.length) {
+    showToast('먼저 [변환]을 눌러주세요.');
+    return;
+  }
+  const csv = buildCSV(currentRecords);
+  // UTF-8 BOM으로 Excel 한글 깨짐 방지
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = formatDate(new Date()).replace(/-/g, '');
+  a.href = url;
+  a.download = `vph_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV 다운로드 완료');
+}
+
+// ============================================================
+// CSV 클립보드 복사
+// ============================================================
+async function copyCSV() {
+  if (!currentRecords.length) {
+    showToast('먼저 [변환]을 눌러주세요.');
+    return;
+  }
+  const csv = buildCSV(currentRecords);
+  try {
+    await navigator.clipboard.writeText(csv);
+    showToast('클립보드에 복사되었습니다');
+  } catch (e) {
+    // 폴백
+    const ta = document.createElement('textarea');
+    ta.value = csv;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('클립보드에 복사되었습니다 (폴백)');
+  }
+}
+
+// ============================================================
+// 초기화 / 샘플
+// ============================================================
+function clearAll() {
+  document.getElementById('input').value = '';
+  document.getElementById('resultArea').innerHTML =
+    '<div class="empty">변환 버튼을 누르면 결과가 표시됩니다.</div>';
+  document.getElementById('stats').textContent = '대기 중';
+  currentRecords = [];
+}
+
+function loadSample() {
+  document.getElementById('input').value = SAMPLE_INPUT;
+  showToast('샘플 입력이 로드되었습니다');
+}
+
+// ============================================================
+// 토스트
+// ============================================================
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// 샘플 데이터
+// ============================================================
+const SAMPLE_INPUT = `Video type:
+
+Videos
+
+
+Views:
+
+1만 – 1000만+
+
+
+Subscribers:
+
+0 – 100만
+
+
+Publish date:
+
+This month
+
+Clear all
+"김민석, 이번엔 정말 끝났다"역대급 폭탄 발표 터졌다!
+41:22
+
+정치 담론
+"김민석, 이번엔 정말 끝났다"역대급 폭탄 발표 터졌다!
+
+정치 담론
+
+5.6만 views • 6 hours ago
+
+9.3천 VPH
+이진숙! 수사, 기소부터 하자!
+39:13
+
+민주 회초리
+이진숙! 수사, 기소부터 하자!
+
+민주 회초리
+
+3.1만 views • 2 days ago
+
+235.3 VPH
+시진핑 북한서 충격 발언!
+29:34
+
+정치일범
+시진핑 북한서 충격 발언!
+
+정치일범
+
+19만 views • 19 hours ago
+
+9.5천 VPH
+3.2x
+젠슨 황이 결국 피날레로 찾아온 사람은 배경훈 부총리
+5:35
+
+KTV 국민방송
+젠슨 황이 결국 피날레로 찾아온 사람은 배경훈 부총리
+
+KTV 국민방송
+
+2.2만 views • 20 hours ago
+
+1.3천 VPH
+10.6x`;
+
+</script>
+
+</body>
+</html>
